@@ -11,6 +11,7 @@ import sys
 import hashlib
 from bs4 import BeautifulSoup 
 from collections import namedtuple
+from subprocess import call
 __version__ = "0.1.2"
 
 Station = namedtuple("Station","url, name, description")
@@ -22,7 +23,10 @@ class StationQuery():
     search_url="http://tunein.com/search/?%s"
     cache_template="./cache/c_%s.tmp"
     def __init__(self,name):
-        self.name=name
+        if name=="":
+            self.name=raw_input("What to search: ")
+        else:
+            self.name=name
     
     def input_option(self,prompt,max_val):
         if max_val==1: return 0
@@ -126,8 +130,6 @@ def parse_arguments():
                         help="Station name")
     args = parser.parse_args()
     args._station_name = ' '.join(args.station_name)
-    if not (args.station_name):
-        parser.error("Missing station name.")
 
     return args
 
@@ -138,4 +140,10 @@ if __name__ == '__main__':
     #sys.argv+="Balkan".split()
     args = parse_arguments()
     query = StationQuery(args._station_name)
-    print query.get_url()
+    url = query.get_url()
+    if url.startswith("http://"):
+        exec_args=["mplayer"]
+        exec_args.append(url)
+        call(exec_args)
+        #os.execvp(exec_args[0],exec_args) 
+        
